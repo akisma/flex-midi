@@ -1,0 +1,17 @@
+{
+  "name": "flex-midi",
+  "version": "1.0.0",
+  "description": "A flexible, customizable MIDI monitoring system.",
+  "type": "module",
+  "main": "dist/src/parser.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}
