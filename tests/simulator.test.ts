@@ -71,4 +71,51 @@ describe('MidiSimulator', () => {
       expect(parsed.type).not.toBe('unknown');
     }
   });
+
+  it('generates a matching noteOff for each noteOn after a delay', () => {
+    const simulator = new MidiSimulator();
+    const messages: Uint8Array[] = [];
+
+    simulator.onMessage((data) => {
+      messages.push(new Uint8Array(data));
+    });
+
+    // Trigger messages until we get a noteOn
+    simulator.start(100);
+
+    // Keep advancing until we find a noteOn
+    let noteOnMsg: Uint8Array | null = null;
+    let attempts = 0;
+    while (!noteOnMsg && attempts < 50) {
+      vi.advanceTimersByTime(100);
+      attempts++;
+      const latest = messages[messages.length - 1];
+      if (latest && (latest[0] & 0xf0) === 0x90 && latest[2] > 0) {
+        noteOnMsg = latest;
+      }
+    }
+
+    simulator.stop();
+    expect(noteOnMsg).not.toBeNull();
+
+    const noteOnNote = noteOnMsg![1];
+    const noteOnChannel = noteOnMsg![0] & 0x0f;
+
+    const countBefore = messages.length;
+
+    // Advance time past the maximum noteOff delay (600ms)
+    vi.advanceTimersByTime(600);
+
+    // Find a noteOff matching the noteOn
+    const matchingNoteOff = messages
+      .slice(countBefore)
+      .find(
+        (msg) =>
+          (msg[0] & 0xf0) === 0x80 &&
+          (msg[0] & 0x0f) === noteOnChannel &&
+          msg[1] === noteOnNote
+      );
+
+    expect(matchingNoteOff).toBeDefined();
+  });
 });

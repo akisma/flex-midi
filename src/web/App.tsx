@@ -7,9 +7,11 @@ import {
   Typography,
   Button,
   Box,
+  Divider,
 } from '@mui/material';
 import { MessageLog } from './MessageLog.js';
 import type { MessageEntry } from './MessageLog.js';
+import { Keyboard } from './Keyboard.js';
 import { MidiSimulator } from '../simulator.js';
 import { parseMidiMessage } from '../parser.js';
 
@@ -24,6 +26,7 @@ const MAX_MESSAGES = 100;
 export function App(): React.ReactElement {
   const [messages, setMessages] = useState<MessageEntry[]>([]);
   const [running, setRunning] = useState(true);
+  const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
   const simulatorRef = useRef<MidiSimulator | null>(null);
 
   useEffect(() => {
@@ -37,6 +40,19 @@ export function App(): React.ReactElement {
         const next = [...prev, entry];
         return next.length > MAX_MESSAGES ? next.slice(next.length - MAX_MESSAGES) : next;
       });
+      if (message.type === 'noteOn') {
+        setActiveNotes((prev) => {
+          const next = new Set(prev);
+          next.add(message.note);
+          return next;
+        });
+      } else if (message.type === 'noteOff') {
+        setActiveNotes((prev) => {
+          const next = new Set(prev);
+          next.delete(message.note);
+          return next;
+        });
+      }
     });
 
     simulator.start();
@@ -74,6 +90,8 @@ export function App(): React.ReactElement {
             {running ? 'Stop' : 'Start'}
           </Button>
         </Box>
+        <Keyboard activeNotes={activeNotes} />
+        <Divider sx={{ my: 2 }} />
         <MessageLog messages={messages} />
       </Container>
     </ThemeProvider>
