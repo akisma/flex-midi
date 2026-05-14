@@ -28,45 +28,34 @@ function formatTime(date: Date): string {
   return `${hh}:${mm}:${ss}.${ms}`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const detailsFormatters: Record<MidiMessage['type'], (msg: any) => string> = {
+  noteOn:          (m) => `Note: ${m.note} Vel: ${m.velocity}`,
+  noteOff:         (m) => `Note: ${m.note} Vel: ${m.velocity}`,
+  aftertouch:      (m) => `Note: ${m.note} Pressure: ${m.pressure}`,
+  controlChange:   (m) => `CC: ${m.controller} Val: ${m.value}`,
+  programChange:   (m) => `Program: ${m.program}`,
+  channelPressure: (m) => `Pressure: ${m.pressure}`,
+  pitchBend:       (m) => `Value: ${m.value}`,
+  unknown:         (m) => `Data: [${m.data.join(', ')}]`,
+};
+
 function formatDetails(message: MidiMessage): string {
-  switch (message.type) {
-    case 'noteOn':
-      return `Note: ${message.note} Vel: ${message.velocity}`;
-    case 'noteOff':
-      return `Note: ${message.note} Vel: ${message.velocity}`;
-    case 'aftertouch':
-      return `Note: ${message.note} Pressure: ${message.pressure}`;
-    case 'controlChange':
-      return `CC: ${message.controller} Val: ${message.value}`;
-    case 'programChange':
-      return `Program: ${message.program}`;
-    case 'channelPressure':
-      return `Pressure: ${message.pressure}`;
-    case 'pitchBend':
-      return `Value: ${message.value}`;
-    case 'unknown':
-      return `Data: [${message.data.join(', ')}]`;
-    default:
-      return '';
-  }
+  return detailsFormatters[message.type](message);
 }
 
 type ChipColor = 'success' | 'error' | 'primary' | 'warning' | 'default';
 
-function getChipColor(type: MidiMessage['type']): ChipColor {
-  switch (type) {
-    case 'noteOn':
-      return 'success';
-    case 'noteOff':
-      return 'error';
-    case 'controlChange':
-      return 'primary';
-    case 'pitchBend':
-      return 'warning';
-    default:
-      return 'default';
-  }
-}
+const chipColors: Record<MidiMessage['type'], ChipColor> = {
+  noteOn: 'success',
+  noteOff: 'error',
+  controlChange: 'primary',
+  pitchBend: 'warning',
+  aftertouch: 'default',
+  programChange: 'default',
+  channelPressure: 'default',
+  unknown: 'default',
+};
 
 const MAX_MESSAGES = 100;
 
@@ -100,7 +89,7 @@ export function MessageLog({ messages }: MessageLogProps): React.ReactElement {
               <TableCell>
                 <Chip
                   label={entry.message.type}
-                  color={getChipColor(entry.message.type)}
+                  color={chipColors[entry.message.type]}
                   size="small"
                 />
               </TableCell>
