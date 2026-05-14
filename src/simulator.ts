@@ -18,7 +18,7 @@ export class MidiSimulator {
     }, intervalMs);
   }
 
-  stop(): void {
+  stop(): void: void: void {
     if (this.interval !== null) {
       clearInterval(this.interval);
       this.interval = null;

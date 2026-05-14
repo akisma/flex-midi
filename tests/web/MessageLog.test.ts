@@ -47,7 +47,16 @@ describe('MessageLog', () => {
     }));
     render(React.createElement(MessageLog, { messages }));
     const rows = screen.getAllByRole('row');
-    // 1 header row + 100 data rows + 1 sentinel bottom row
-    expect(rows.length).toBe(102);
+    // 1 header row + 100 data rows
+    expect(rows.length).toBe(101);
+  });
+
+  it('renders a scrollable container with fixed height and overflow-y auto', () => {
+    const { container } = render(React.createElement(MessageLog, { messages: [] }));
+    // The TableContainer renders as a Paper div wrapping the table
+    const tableContainer = container.firstChild as HTMLElement;
+    expect(tableContainer).not.toBeNull();
+    expect(tableContainer.style.height).toBe('350px');
+    expect(tableContainer.style.overflowY).toBe('auto');
   });
 });

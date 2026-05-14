@@ -60,17 +60,17 @@ const chipColors: Record<MidiMessage['type'], ChipColor> = {
 const MAX_MESSAGES = 100;
 
 export function MessageLog({ messages }: MessageLogProps): React.ReactElement {
-  const bottomRef = useRef<HTMLTableRowElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const displayed = messages.slice(-MAX_MESSAGES);
 
   useEffect(() => {
-    if (bottomRef.current && typeof bottomRef.current.scrollIntoView === 'function') {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [messages]);
 
   return (
-    <TableContainer component={Paper} sx={{ maxHeight: '70vh', overflow: 'auto' }}>
+    <TableContainer ref={containerRef} component={Paper} style={{ height: '350px', overflowY: 'auto' }}>
       <Table stickyHeader size="small">
         <TableHead>
           <TableRow>
@@ -101,7 +101,7 @@ export function MessageLog({ messages }: MessageLogProps): React.ReactElement {
               </TableCell>
             </TableRow>
           ))}
-          <TableRow ref={bottomRef} />
+          <TableRow />
         </TableBody>
       </Table>
     </TableContainer>
