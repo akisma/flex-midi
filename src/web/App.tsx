@@ -8,6 +8,8 @@ import {
   Button,
   Box,
   Grid,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 import { MessageLog } from './MessageLog.js';
 import type { MessageEntry } from './MessageLog.js';
@@ -32,38 +34,43 @@ export function App(): React.ReactElement {
   const [lastNote, setLastNote] = useState<(MidiMessage & { type: 'noteOn' }) | null>(null);
   const [lastChannel, setLastChannel] = useState<number | null>(null);
   const [messagesPerSecond, setMessagesPerSecond] = useState(0);
+  const [mode, setMode] = useState<'simulator' | 'play'>('simulator');
   const simulatorRef = useRef<MidiSimulator | null>(null);
   const timestampsRef = useRef<Date[]>([]);
+
+  const handleMidiInput = (data: Uint8Array) => {
+    const message = parseMidiMessage(data);
+    const entry: MessageEntry = { message, timestamp: new Date() };
+    setMessages((prev) => {
+      const next = [...prev, entry];
+      return next.length > MAX_MESSAGES ? next.slice(next.length - MAX_MESSAGES) : next;
+    });
+    if (message.type === 'noteOn') {
+      setActiveNotes((prev) => {
+        const next = new Set(prev);
+        next.add(message.note);
+        return next;
+      });
+      setLastNote(message);
+    } else if (message.type === 'noteOff') {
+      setActiveNotes((prev) => {
+        const next = new Set(prev);
+        next.delete(message.note);
+        return next;
+      });
+    }
+    if ('channel' in message) {
+      setLastChannel(message.channel);
+    }
+    timestampsRef.current.push(new Date());
+  };
 
   useEffect(() => {
     const simulator = new MidiSimulator();
     simulatorRef.current = simulator;
 
     simulator.onMessage((data) => {
-      const message = parseMidiMessage(data);
-      const entry: MessageEntry = { message, timestamp: new Date() };
-      setMessages((prev) => {
-        const next = [...prev, entry];
-        return next.length > MAX_MESSAGES ? next.slice(next.length - MAX_MESSAGES) : next;
-      });
-      if (message.type === 'noteOn') {
-        setActiveNotes((prev) => {
-          const next = new Set(prev);
-          next.add(message.note);
-          return next;
-        });
-        setLastNote(message);
-      } else if (message.type === 'noteOff') {
-        setActiveNotes((prev) => {
-          const next = new Set(prev);
-          next.delete(message.note);
-          return next;
-        });
-      }
-      if ('channel' in message) {
-        setLastChannel(message.channel);
-      }
-      timestampsRef.current.push(new Date());
+      handleMidiInput(data);
     });
 
     simulator.start();
@@ -93,6 +100,21 @@ export function App(): React.ReactElement {
     }
   };
 
+  const handleModeChange = (_: React.MouseEvent<HTMLElement>, newMode: 'simulator' | 'play' | null) => {
+    if (newMode === null) return;
+    const simulator = simulatorRef.current;
+    if (newMode === 'play') {
+      if (simulator && running) {
+        simulator.stop();
+        setRunning(false);
+      }
+      setActiveNotes(new Set());
+    } else {
+      setActiveNotes(new Set());
+    }
+    setMode(newMode);
+  };
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -101,17 +123,33 @@ export function App(): React.ReactElement {
           <Typography variant="h5" component="h1">
             MIDI Dashboard
           </Typography>
-          <Button
-            variant="contained"
-            color={running ? 'error' : 'success'}
-            onClick={handleToggle}
+          <ToggleButtonGroup
+            value={mode}
+            exclusive
+            onChange={handleModeChange}
+            size="small"
           >
-            {running ? 'Stop' : 'Start'}
-          </Button>
+            <ToggleButton value="simulator">Simulator</ToggleButton>
+            <ToggleButton value="play">Play</ToggleButton>
+          </ToggleButtonGroup>
+          {mode === 'simulator' && (
+            <Button
+              variant="contained"
+              color={running ? 'error' : 'success'}
+              onClick={handleToggle}
+            >
+              {running ? 'Stop' : 'Start'}
+            </Button>
+          )}
         </Box>
         <Grid container spacing={2} sx={{ mb: 2 }}>
           <Grid item xs={12} md={8}>
-            <Keyboard activeNotes={activeNotes} />
+            <Keyboard
+              activeNotes={activeNotes}
+              interactive={mode === 'play'}
+              onNoteOn={mode === 'play' ? handleMidiInput : undefined}
+              onNoteOff={mode === 'play' ? handleMidiInput : undefined}
+            />
           </Grid>
           <Grid item xs={12} md={4}>
             <StatusPanel

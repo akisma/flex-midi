@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Box, Paper } from '@mui/material';
 
 interface KeyboardProps {
   activeNotes: Set<number>;
+  interactive?: boolean;
+  onNoteOn?: (data: Uint8Array) => void;
+  onNoteOff?: (data: Uint8Array) => void;
 }
 
 // Notes 48-83 (C3 to B5), 3 octaves
@@ -54,8 +57,29 @@ const BLACK_KEY_HEIGHT = 72; // px
 // Black key is centered between two white keys, so offset = WHITE_KEY_WIDTH - BLACK_KEY_WIDTH/2
 const BLACK_KEY_OFFSET = WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2;
 
-export function Keyboard({ activeNotes }: KeyboardProps): React.ReactElement {
+export function Keyboard({ activeNotes, interactive = false, onNoteOn, onNoteOff }: KeyboardProps): React.ReactElement {
+  const pressedKeys = useRef<Set<number>>(new Set());
   const totalWidth = WHITE_KEYS.length * WHITE_KEY_WIDTH;
+
+  const handleMouseDown = (note: number) => {
+    if (!interactive || !onNoteOn) return;
+    pressedKeys.current.add(note);
+    onNoteOn(new Uint8Array([0x90, note, 100]));
+  };
+
+  const handleMouseUp = (note: number) => {
+    if (!interactive || !onNoteOff) return;
+    pressedKeys.current.delete(note);
+    onNoteOff(new Uint8Array([0x80, note, 0]));
+  };
+
+  const handleMouseLeave = (note: number) => {
+    if (!interactive || !onNoteOff) return;
+    if (pressedKeys.current.has(note)) {
+      pressedKeys.current.delete(note);
+      onNoteOff(new Uint8Array([0x80, note, 0]));
+    }
+  };
 
   return (
     <Paper
@@ -86,6 +110,9 @@ export function Keyboard({ activeNotes }: KeyboardProps): React.ReactElement {
               data-note={key.note}
               data-key-type="white"
               style={{ backgroundColor: isActive ? 'rgb(76, 175, 80)' : '#f5f5f5' }}
+              onMouseDown={interactive ? () => handleMouseDown(key.note) : undefined}
+              onMouseUp={interactive ? () => handleMouseUp(key.note) : undefined}
+              onMouseLeave={interactive ? () => handleMouseLeave(key.note) : undefined}
               sx={{
                 position: 'absolute',
                 left: index * WHITE_KEY_WIDTH,
@@ -97,6 +124,8 @@ export function Keyboard({ activeNotes }: KeyboardProps): React.ReactElement {
                 boxSizing: 'border-box',
                 zIndex: 1,
                 transition: 'background-color 0.05s',
+                cursor: interactive ? 'pointer' : 'default',
+                '&:hover': interactive ? { filter: 'brightness(1.1)' } : {},
               }}
             />
           );
@@ -112,6 +141,9 @@ export function Keyboard({ activeNotes }: KeyboardProps): React.ReactElement {
               data-note={key.note}
               data-key-type="black"
               style={{ backgroundColor: isActive ? 'rgb(76, 175, 80)' : '#111' }}
+              onMouseDown={interactive ? () => handleMouseDown(key.note) : undefined}
+              onMouseUp={interactive ? () => handleMouseUp(key.note) : undefined}
+              onMouseLeave={interactive ? () => handleMouseLeave(key.note) : undefined}
               sx={{
                 position: 'absolute',
                 left: leftPos,
@@ -123,6 +155,8 @@ export function Keyboard({ activeNotes }: KeyboardProps): React.ReactElement {
                 boxSizing: 'border-box',
                 zIndex: 2,
                 transition: 'background-color 0.05s',
+                cursor: interactive ? 'pointer' : 'default',
+                '&:hover': interactive ? { filter: 'brightness(1.3)' } : {},
               }}
             />
           );

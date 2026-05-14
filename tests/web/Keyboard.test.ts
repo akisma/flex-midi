@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { Keyboard } from '../../src/web/Keyboard.js';
 
@@ -61,5 +61,76 @@ describe('Keyboard', () => {
     allKeys.forEach((key) => {
       expect((key as HTMLElement).style.backgroundColor).not.toBe('rgb(76, 175, 80)');
     });
+  });
+
+  it('in interactive mode, mousedown on a white key calls onNoteOn with correct bytes', () => {
+    const onNoteOn = vi.fn();
+    const { container } = render(
+      React.createElement(Keyboard, {
+        activeNotes: new Set<number>(),
+        interactive: true,
+        onNoteOn,
+      })
+    );
+    // C3 = note 48, white key
+    const key = container.querySelector('[data-note="48"]') as HTMLElement;
+    fireEvent.mouseDown(key);
+    expect(onNoteOn).toHaveBeenCalledTimes(1);
+    const arg = onNoteOn.mock.calls[0][0] as Uint8Array;
+    expect(arg).toBeInstanceOf(Uint8Array);
+    expect(Array.from(arg)).toEqual([0x90, 48, 100]);
+  });
+
+  it('in interactive mode, mouseup on a key calls onNoteOff with correct bytes', () => {
+    const onNoteOff = vi.fn();
+    const { container } = render(
+      React.createElement(Keyboard, {
+        activeNotes: new Set<number>(),
+        interactive: true,
+        onNoteOff,
+      })
+    );
+    // D3 = note 50, white key
+    const key = container.querySelector('[data-note="50"]') as HTMLElement;
+    fireEvent.mouseUp(key);
+    expect(onNoteOff).toHaveBeenCalledTimes(1);
+    const arg = onNoteOff.mock.calls[0][0] as Uint8Array;
+    expect(arg).toBeInstanceOf(Uint8Array);
+    expect(Array.from(arg)).toEqual([0x80, 50, 0]);
+  });
+
+  it('in non-interactive mode, mousedown does not call onNoteOn', () => {
+    const onNoteOn = vi.fn();
+    const { container } = render(
+      React.createElement(Keyboard, {
+        activeNotes: new Set<number>(),
+        interactive: false,
+        onNoteOn,
+      })
+    );
+    const key = container.querySelector('[data-note="48"]') as HTMLElement;
+    fireEvent.mouseDown(key);
+    expect(onNoteOn).not.toHaveBeenCalled();
+  });
+
+  it('onMouseLeave on a pressed key calls onNoteOff', () => {
+    const onNoteOn = vi.fn();
+    const onNoteOff = vi.fn();
+    const { container } = render(
+      React.createElement(Keyboard, {
+        activeNotes: new Set<number>(),
+        interactive: true,
+        onNoteOn,
+        onNoteOff,
+      })
+    );
+    // C#3 = note 49, black key
+    const key = container.querySelector('[data-note="49"]') as HTMLElement;
+    fireEvent.mouseDown(key);
+    expect(onNoteOn).toHaveBeenCalledTimes(1);
+    fireEvent.mouseLeave(key);
+    expect(onNoteOff).toHaveBeenCalledTimes(1);
+    const arg = onNoteOff.mock.calls[0][0] as Uint8Array;
+    expect(Array.from(arg)).toEqual([0x80, 49, 0]);
   });
 });
