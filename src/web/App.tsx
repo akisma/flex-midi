@@ -7,13 +7,15 @@ import {
   Typography,
   Button,
   Box,
-  Divider,
+  Grid,
 } from '@mui/material';
 import { MessageLog } from './MessageLog.js';
 import type { MessageEntry } from './MessageLog.js';
 import { Keyboard } from './Keyboard.js';
+import { StatusPanel } from './StatusPanel.js';
 import { MidiSimulator } from '../simulator.js';
 import { parseMidiMessage } from '../parser.js';
+import type { MidiMessage } from '../types.js';
 
 const darkTheme = createTheme({
   palette: {
@@ -27,7 +29,11 @@ export function App(): React.ReactElement {
   const [messages, setMessages] = useState<MessageEntry[]>([]);
   const [running, setRunning] = useState(true);
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
+  const [lastNote, setLastNote] = useState<(MidiMessage & { type: 'noteOn' }) | null>(null);
+  const [lastChannel, setLastChannel] = useState<number | null>(null);
+  const [messagesPerSecond, setMessagesPerSecond] = useState(0);
   const simulatorRef = useRef<MidiSimulator | null>(null);
+  const timestampsRef = useRef<Date[]>([]);
 
   useEffect(() => {
     const simulator = new MidiSimulator();
@@ -46,6 +52,7 @@ export function App(): React.ReactElement {
           next.add(message.note);
           return next;
         });
+        setLastNote(message);
       } else if (message.type === 'noteOff') {
         setActiveNotes((prev) => {
           const next = new Set(prev);
@@ -53,12 +60,24 @@ export function App(): React.ReactElement {
           return next;
         });
       }
+      if ('channel' in message) {
+        setLastChannel(message.channel);
+      }
+      timestampsRef.current.push(new Date());
     });
 
     simulator.start();
 
+    const mpsInterval = setInterval(() => {
+      const now = new Date();
+      const cutoff = new Date(now.getTime() - 5000);
+      timestampsRef.current = timestampsRef.current.filter((t) => t >= cutoff);
+      setMessagesPerSecond(timestampsRef.current.length / 5);
+    }, 500);
+
     return () => {
       simulator.stop();
+      clearInterval(mpsInterval);
     };
   }, []);
 
@@ -80,7 +99,7 @@ export function App(): React.ReactElement {
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
           <Typography variant="h5" component="h1">
-            MIDI Message Log
+            MIDI Dashboard
           </Typography>
           <Button
             variant="contained"
@@ -90,8 +109,19 @@ export function App(): React.ReactElement {
             {running ? 'Stop' : 'Start'}
           </Button>
         </Box>
-        <Keyboard activeNotes={activeNotes} />
-        <Divider sx={{ my: 2 }} />
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid item xs={12} md={8}>
+            <Keyboard activeNotes={activeNotes} />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <StatusPanel
+              lastNote={lastNote}
+              lastChannel={lastChannel}
+              activeNoteCount={activeNotes.size}
+              messagesPerSecond={messagesPerSecond}
+            />
+          </Grid>
+        </Grid>
         <MessageLog messages={messages} />
       </Container>
     </ThemeProvider>
