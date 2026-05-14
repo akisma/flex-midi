@@ -9,8 +9,8 @@ describe('MessageLog', () => {
     render(React.createElement(MessageLog, { messages: [] }));
     expect(screen.getByRole('table')).toBeTruthy();
     const rows = screen.getAllByRole('row');
-    // Only the header row + the sentinel bottom row
-    expect(rows.length).toBe(2);
+    // Only the header row
+    expect(rows.length).toBe(1);
   });
 
   it('displays a message row with correct type, channel, and details', () => {

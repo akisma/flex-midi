@@ -101,7 +101,6 @@ export function MessageLog({ messages }: MessageLogProps): React.ReactElement {
               </TableCell>
             </TableRow>
           ))}
-          <TableRow />
         </TableBody>
       </Table>
     </TableContainer>
