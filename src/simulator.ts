@@ -1,6 +1,7 @@
 export class MidiSimulator {
   private interval: ReturnType<typeof setInterval> | null = null;
   private listener: ((data: Uint8Array) => void) | null = null;
+  private pendingTimeouts: ReturnType<typeof setTimeout>[] = [];
 
   onMessage(listener: (data: Uint8Array) => void): void {
     this.listener = listener;
@@ -38,9 +39,18 @@ export class MidiSimulator {
     const messageType = Math.floor(Math.random() * 4);
 
     switch (messageType) {
-      case 0:
-        // noteOn
-        return new Uint8Array([0x90 | channel, note, velocity]);
+      case 0: {
+        // noteOn — schedule a matching noteOff after 200-600ms
+        const noteOnMsg = new Uint8Array([0x90 | channel, note, velocity]);
+        const delay = 200 + Math.floor(Math.random() * 401);
+        const t = setTimeout(() => {
+          if (this.listener) {
+            this.listener(new Uint8Array([0x80 | channel, note, velocity]));
+          }
+        }, delay);
+        this.pendingTimeouts.push(t);
+        return noteOnMsg;
+      }
       case 1:
         // noteOff
         return new Uint8Array([0x80 | channel, note, velocity]);
