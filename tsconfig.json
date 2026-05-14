@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "Node16",
     "moduleResolution": "Node16",
+    "jsx": "react-jsx",
     "outDir": "dist",
     "rootDir": ".",
     "strict": true,
@@ -12,6 +13,6 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "include": ["src/**/*", "tests/**/*", "vitest.config.ts"],
+  "include": ["src/**/*", "tests/**/*", "vitest.config.ts", "vite.config.ts", "index.html"],
   "exclude": ["node_modules", "dist"]
 }
