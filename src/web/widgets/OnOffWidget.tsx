@@ -16,6 +16,8 @@ export function OnOffWidget({ config, value }: OnOffWidgetProps): React.ReactEle
     <Card elevation={2}>
       <CardContent>
         <Box
+          data-testid="indicator"
+          data-state={isOn ? 'on' : 'off'}
           sx={{
             width: 40,
             height: 40,

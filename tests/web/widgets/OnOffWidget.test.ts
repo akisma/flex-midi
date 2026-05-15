@@ -14,34 +14,26 @@ const baseConfig: WidgetConfig = {
 };
 
 describe('OnOffWidget', () => {
-  it('shows green indicator when value >= threshold', () => {
-    const { container } = render(
-      React.createElement(OnOffWidget, { config: baseConfig, value: 64 })
-    );
-    const circle = container.querySelector('[style*="border-radius"]') as HTMLElement;
-    expect(circle).not.toBeNull();
-    expect(circle.style.backgroundColor).toBe('rgb(76, 175, 80)');
+  it('shows on state when value >= threshold', () => {
+    render(React.createElement(OnOffWidget, { config: baseConfig, value: 64 }));
+    const indicator = screen.getByTestId('indicator');
+    expect(indicator.dataset.state).toBe('on');
   });
 
-  it('shows grey indicator when value < threshold', () => {
-    const { container } = render(
-      React.createElement(OnOffWidget, { config: baseConfig, value: 63 })
-    );
-    const circle = container.querySelector('[style*="border-radius"]') as HTMLElement;
-    expect(circle).not.toBeNull();
-    expect(circle.style.backgroundColor).toBe('rgb(97, 97, 97)');
+  it('shows off state when value < threshold', () => {
+    render(React.createElement(OnOffWidget, { config: baseConfig, value: 63 }));
+    const indicator = screen.getByTestId('indicator');
+    expect(indicator.dataset.state).toBe('off');
   });
 
   it('uses default threshold of 64 when not specified', () => {
     const configNoThreshold: WidgetConfig = { ...baseConfig, threshold: undefined };
-    const { container } = render(
-      React.createElement(OnOffWidget, { config: configNoThreshold, value: 64 })
-    );
-    const circle = container.querySelector('[style*="border-radius"]') as HTMLElement;
-    expect(circle.style.backgroundColor).toBe('rgb(76, 175, 80)');
+    render(React.createElement(OnOffWidget, { config: configNoThreshold, value: 64 }));
+    const indicator = screen.getByTestId('indicator');
+    expect(indicator.dataset.state).toBe('on');
   });
 
-  it('shows \u2014 when no value received', () => {
+  it('shows — when no value received', () => {
     render(React.createElement(OnOffWidget, { config: baseConfig, value: undefined }));
     expect(screen.getByText('\u2014')).toBeTruthy();
   });

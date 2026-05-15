@@ -28,12 +28,11 @@ describe('WidgetGrid', () => {
 
   it('renders OnOffWidget for type onoff', () => {
     const ccValues = new Map([['0:64', 127]]);
-    const { container } = render(
+    render(
       React.createElement(WidgetGrid, { widgets, ccValues, onRemove: vi.fn() })
     );
     expect(screen.getByText('Sustain')).toBeTruthy();
-    const circles = container.querySelectorAll('[style*="border-radius"]');
-    expect(circles.length).toBeGreaterThan(0);
+    expect(screen.getByTestId('indicator')).toBeTruthy();
   });
 
   it('calls onRemove with correct id when delete button is clicked', () => {
