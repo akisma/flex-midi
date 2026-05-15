@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import { Box, Paper } from '@mui/material';
 
 interface KeyboardProps {
   activeNotes: Set<number>;
@@ -82,51 +81,35 @@ export function Keyboard({ activeNotes, interactive = false, onNoteOn, onNoteOff
   };
 
   return (
-    <Paper
-      elevation={2}
-      sx={{
-        display: 'inline-block',
-        p: 2,
-        backgroundColor: '#1a1a2e',
-        borderRadius: 2,
-        width: '100%',
-        overflowX: 'auto',
-      }}
-    >
-      <Box
-        sx={{
-          position: 'relative',
-          width: totalWidth,
-          height: WHITE_KEY_HEIGHT,
-          mx: 'auto',
-        }}
+    <div className="bg-gray-800 rounded-lg p-4 w-full overflow-x-auto">
+      <div
+        style={{ position: 'relative', width: totalWidth, height: WHITE_KEY_HEIGHT, margin: '0 auto' }}
       >
         {/* White keys */}
         {WHITE_KEYS.map((key, index) => {
           const isActive = activeNotes.has(key.note);
           return (
-            <Box
+            <div
               key={key.note}
               data-note={key.note}
               data-key-type="white"
-              style={{ backgroundColor: isActive ? 'rgb(76, 175, 80)' : '#f5f5f5' }}
-              onMouseDown={interactive ? () => handleMouseDown(key.note) : undefined}
-              onMouseUp={interactive ? () => handleMouseUp(key.note) : undefined}
-              onMouseLeave={interactive ? () => handleMouseLeave(key.note) : undefined}
-              sx={{
+              style={{
                 position: 'absolute',
                 left: index * WHITE_KEY_WIDTH,
                 top: 0,
                 width: WHITE_KEY_WIDTH - 2,
                 height: WHITE_KEY_HEIGHT,
+                backgroundColor: isActive ? 'rgb(76, 175, 80)' : '#f5f5f5',
                 border: '1px solid #555',
                 borderRadius: '0 0 4px 4px',
                 boxSizing: 'border-box',
                 zIndex: 1,
                 transition: 'background-color 0.05s',
                 cursor: interactive ? 'pointer' : 'default',
-                '&:hover': interactive ? { filter: 'brightness(1.1)' } : {},
               }}
+              onMouseDown={interactive ? () => handleMouseDown(key.note) : undefined}
+              onMouseUp={interactive ? () => handleMouseUp(key.note) : undefined}
+              onMouseLeave={interactive ? () => handleMouseLeave(key.note) : undefined}
             />
           );
         })}
@@ -136,32 +119,31 @@ export function Keyboard({ activeNotes, interactive = false, onNoteOn, onNoteOff
           const isActive = activeNotes.has(key.note);
           const leftPos = (key.whiteKeyIndex! + 1) * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2;
           return (
-            <Box
+            <div
               key={key.note}
               data-note={key.note}
               data-key-type="black"
-              style={{ backgroundColor: isActive ? 'rgb(76, 175, 80)' : '#111' }}
-              onMouseDown={interactive ? () => handleMouseDown(key.note) : undefined}
-              onMouseUp={interactive ? () => handleMouseUp(key.note) : undefined}
-              onMouseLeave={interactive ? () => handleMouseLeave(key.note) : undefined}
-              sx={{
+              style={{
                 position: 'absolute',
                 left: leftPos,
                 top: 0,
                 width: BLACK_KEY_WIDTH,
                 height: BLACK_KEY_HEIGHT,
+                backgroundColor: isActive ? 'rgb(76, 175, 80)' : '#111',
                 border: '1px solid #000',
                 borderRadius: '0 0 3px 3px',
                 boxSizing: 'border-box',
                 zIndex: 2,
                 transition: 'background-color 0.05s',
                 cursor: interactive ? 'pointer' : 'default',
-                '&:hover': interactive ? { filter: 'brightness(1.3)' } : {},
               }}
+              onMouseDown={interactive ? () => handleMouseDown(key.note) : undefined}
+              onMouseUp={interactive ? () => handleMouseUp(key.note) : undefined}
+              onMouseLeave={interactive ? () => handleMouseLeave(key.note) : undefined}
             />
           );
         })}
-      </Box>
-    </Paper>
+      </div>
+    </div>
   );
 }

@@ -38,11 +38,8 @@ describe('AddWidgetDialog', () => {
     render(React.createElement(AddWidgetDialog, { open: true, onAdd: vi.fn(), onClose: vi.fn() }));
     expect(screen.queryByLabelText(/threshold/i)).toBeNull();
 
-    // MUI Select: find the select trigger by role
     const select = screen.getByRole('combobox');
-    fireEvent.mouseDown(select);
-    const onOffOption = screen.getByText('On/Off Indicator');
-    fireEvent.click(onOffOption);
+    fireEvent.change(select, { target: { value: 'onoff' } });
 
     expect(screen.getByLabelText(/threshold/i)).toBeTruthy();
   });

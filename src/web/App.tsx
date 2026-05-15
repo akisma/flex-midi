@@ -1,17 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  ThemeProvider,
-  createTheme,
-  CssBaseline,
-  Container,
-  Typography,
-  Button,
-  Box,
-  Grid,
-  ToggleButtonGroup,
-  ToggleButton,
-} from '@mui/material';
-const AddIcon = () => React.createElement('svg', { xmlns: 'http://www.w3.org/2000/svg', width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }, React.createElement('path', { d: 'M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z' }));
 import { MessageLog } from './MessageLog.js';
 import type { MessageEntry } from './MessageLog.js';
 import { Keyboard } from './Keyboard.js';
@@ -21,12 +8,6 @@ import { AddWidgetDialog } from './AddWidgetDialog.js';
 import { MidiSimulator } from '../simulator.js';
 import { parseMidiMessage } from '../parser.js';
 import type { MidiMessage, WidgetConfig } from '../types.js';
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
 
 const MAX_MESSAGES = 100;
 
@@ -129,57 +110,67 @@ export function App(): React.ReactElement {
   };
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
-          <Typography variant="h5" component="h1">
-            MIDI Dashboard
-          </Typography>
-          <ToggleButtonGroup
-            value={mode}
-            exclusive
-            onChange={handleModeChange}
-            size="small"
-          >
-            <ToggleButton value="simulator">Simulator</ToggleButton>
-            <ToggleButton value="play">Play</ToggleButton>
-          </ToggleButtonGroup>
+    <div className="min-h-screen bg-gray-900">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="flex items-center gap-3 mb-4">
+          <h1 className="text-xl font-bold text-white">MIDI Dashboard</h1>
+          <div className="flex rounded overflow-hidden border border-gray-600">
+            <button
+              className={`px-3 py-1 text-sm font-medium ${
+                mode === 'simulator'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+              onClick={() => handleModeChange(null as unknown as React.MouseEvent<HTMLElement>, 'simulator')}
+            >
+              Simulator
+            </button>
+            <button
+              className={`px-3 py-1 text-sm font-medium ${
+                mode === 'play'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+              onClick={() => handleModeChange(null as unknown as React.MouseEvent<HTMLElement>, 'play')}
+            >
+              Play
+            </button>
+          </div>
           {mode === 'simulator' && (
-            <Button
-              variant="contained"
-              color={running ? 'error' : 'success'}
+            <button
+              className={`px-4 py-2 rounded font-medium text-white ${
+                running ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
+              }`}
               onClick={handleToggle}
             >
               {running ? 'Stop' : 'Start'}
-            </Button>
+            </button>
           )}
-          <Button
-            variant="outlined"
-            startIcon={React.createElement(AddIcon)}
+          <button
+            className="px-4 py-2 rounded font-medium bg-gray-700 text-white hover:bg-gray-600 border border-gray-600"
             onClick={() => setAddDialogOpen(true)}
           >
             Add Widget
-          </Button>
-        </Box>
-        <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={12} md={8}>
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+          <div className="md:col-span-8">
             <Keyboard
               activeNotes={activeNotes}
               interactive={mode === 'play'}
               onNoteOn={mode === 'play' ? handleMidiInput : undefined}
               onNoteOff={mode === 'play' ? handleMidiInput : undefined}
             />
-          </Grid>
-          <Grid item xs={12} md={4}>
+          </div>
+          <div className="md:col-span-4">
             <StatusPanel
               lastNote={lastNote}
               lastChannel={lastChannel}
               activeNoteCount={activeNotes.size}
               messagesPerSecond={messagesPerSecond}
             />
-          </Grid>
-        </Grid>
+          </div>
+        </div>
         <WidgetGrid
           widgets={widgets}
           ccValues={ccValues}
@@ -194,7 +185,7 @@ export function App(): React.ReactElement {
           }}
           onClose={() => setAddDialogOpen(false)}
         />
-      </Container>
-    </ThemeProvider>
+      </div>
+    </div>
   );
 }

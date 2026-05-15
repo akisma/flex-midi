@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card, CardContent, Typography, Divider, Box } from '@mui/material';
 import type { MidiMessage } from '../types.js';
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -19,12 +18,10 @@ interface StatusPanelProps {
 
 function StatRow({ label, value }: { label: string; value: string }): React.ReactElement {
   return (
-    <Box sx={{ py: 1 }}>
-      <Typography variant="caption" color="text.secondary">
-        {label}
-      </Typography>
-      <Typography variant="body1">{value}</Typography>
-    </Box>
+    <div>
+      <div className="text-gray-400 text-sm">{label}</div>
+      <div className="text-white text-lg font-mono">{value}</div>
+    </div>
   );
 }
 
@@ -42,20 +39,16 @@ export function StatusPanel({
   const channelDisplay = lastChannel !== null ? String(lastChannel) : '\u2014';
 
   return (
-    <Card elevation={2} sx={{ height: '100%' }}>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Status
-        </Typography>
-        <Divider sx={{ mb: 1 }} />
-        <StatRow label="Last Note" value={lastNoteDisplay} />
-        <Divider />
-        <StatRow label="Channel" value={channelDisplay} />
-        <Divider />
-        <StatRow label="Active Notes" value={String(activeNoteCount)} />
-        <Divider />
-        <StatRow label="Messages/sec" value={messagesPerSecond.toFixed(1)} />
-      </CardContent>
-    </Card>
+    <div className="bg-gray-800 rounded-lg p-4 h-full">
+      <div className="text-white font-semibold mb-2">Status</div>
+      <hr className="border-gray-700 my-2" />
+      <StatRow label="Last Note" value={lastNoteDisplay} />
+      <hr className="border-gray-700 my-2" />
+      <StatRow label="Channel" value={channelDisplay} />
+      <hr className="border-gray-700 my-2" />
+      <StatRow label="Active Notes" value={String(activeNoteCount)} />
+      <hr className="border-gray-700 my-2" />
+      <StatRow label="Messages/sec" value={messagesPerSecond.toFixed(1)} />
+    </div>
   );
 }

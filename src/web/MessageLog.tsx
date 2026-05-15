@@ -1,14 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  Paper,
-} from '@mui/material';
 import type { MidiMessage } from '../types.js';
 
 export interface MessageEntry {
@@ -44,17 +34,15 @@ function formatDetails(message: MidiMessage): string {
   return detailsFormatters[message.type](message);
 }
 
-type ChipColor = 'success' | 'error' | 'primary' | 'warning' | 'default';
-
-const chipColors: Record<MidiMessage['type'], ChipColor> = {
-  noteOn: 'success',
-  noteOff: 'error',
-  controlChange: 'primary',
-  pitchBend: 'warning',
-  aftertouch: 'default',
-  programChange: 'default',
-  channelPressure: 'default',
-  unknown: 'default',
+const badgeClasses: Record<MidiMessage['type'], string> = {
+  noteOn: 'bg-green-900 text-green-300',
+  noteOff: 'bg-red-900 text-red-300',
+  controlChange: 'bg-blue-900 text-blue-300',
+  pitchBend: 'bg-yellow-900 text-yellow-300',
+  aftertouch: 'bg-gray-700 text-gray-300',
+  programChange: 'bg-gray-700 text-gray-300',
+  channelPressure: 'bg-gray-700 text-gray-300',
+  unknown: 'bg-gray-700 text-gray-300',
 };
 
 const MAX_MESSAGES = 100;
@@ -70,39 +58,37 @@ export function MessageLog({ messages }: MessageLogProps): React.ReactElement {
   }, [messages]);
 
   return (
-    <TableContainer ref={containerRef} component={Paper} style={{ height: '350px', overflowY: 'auto' }}>
-      <Table stickyHeader size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Time</TableCell>
-            <TableCell>Type</TableCell>
-            <TableCell>Channel</TableCell>
-            <TableCell>Details</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+    <div ref={containerRef} style={{ height: '350px', overflowY: 'auto' }}>
+      <table role="table" className="w-full text-sm text-left">
+        <thead>
+          <tr>
+            <th className="px-2 py-1 text-gray-400 font-medium">Time</th>
+            <th className="px-2 py-1 text-gray-400 font-medium">Type</th>
+            <th className="px-2 py-1 text-gray-400 font-medium">Channel</th>
+            <th className="px-2 py-1 text-gray-400 font-medium">Details</th>
+          </tr>
+        </thead>
+        <tbody>
           {displayed.map((entry, index) => (
-            <TableRow key={index}>
-              <TableCell sx={{ fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+            <tr key={index}>
+              <td className="px-2 py-1 font-mono whitespace-nowrap text-gray-300">
                 {formatTime(entry.timestamp)}
-              </TableCell>
-              <TableCell>
-                <Chip
-                  label={entry.message.type}
-                  color={chipColors[entry.message.type]}
-                  size="small"
-                />
-              </TableCell>
-              <TableCell>
+              </td>
+              <td className="px-2 py-1">
+                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${badgeClasses[entry.message.type]}`}>
+                  {entry.message.type}
+                </span>
+              </td>
+              <td className="px-2 py-1 text-gray-300">
                 {'channel' in entry.message ? entry.message.channel : '—'}
-              </TableCell>
-              <TableCell sx={{ fontFamily: 'monospace' }}>
+              </td>
+              <td className="px-2 py-1 font-mono text-gray-300">
                 {formatDetails(entry.message)}
-              </TableCell>
-            </TableRow>
+              </td>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        </tbody>
+      </table>
+    </div>
   );
 }

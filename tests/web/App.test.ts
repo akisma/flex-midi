@@ -45,14 +45,14 @@ describe('App mode toggle', () => {
     expect(screen.getByRole('button', { name: /start/i })).toBeTruthy();
   });
 
-  it('in Play mode, keyboard keys have cursor pointer styling', () => {
+  it('in Play mode, keyboard keys are interactive (cursor pointer)', () => {
     const { container } = render(React.createElement(App));
     const playButton = screen.getByRole('button', { name: /play/i });
     fireEvent.click(playButton);
     const whiteKey = container.querySelector('[data-key-type="white"]') as HTMLElement;
     expect(whiteKey).not.toBeNull();
-    // In interactive mode, cursor:pointer is applied via sx which sets inline style
-    // We verify the key exists and the mode toggle worked (Start/Stop hidden)
+    // Verify the mode toggle worked (Start/Stop hidden) and key has cursor pointer
     expect(screen.queryByRole('button', { name: /stop/i })).toBeNull();
+    expect(whiteKey.style.cursor).toBe('pointer');
   });
 });

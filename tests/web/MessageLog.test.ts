@@ -26,7 +26,7 @@ describe('MessageLog', () => {
     expect(screen.getByText('Note: 60 Vel: 100')).toBeTruthy();
   });
 
-  it('color-codes noteOn messages with a green (success) chip', () => {
+  it('color-codes noteOn messages with a green badge', () => {
     const messages: MessageEntry[] = [
       {
         message: { type: 'noteOn', channel: 0, note: 60, velocity: 80 },
@@ -34,10 +34,9 @@ describe('MessageLog', () => {
       },
     ];
     const { container } = render(React.createElement(MessageLog, { messages }));
-    // MUI Chip with color="success" gets the class MuiChip-colorSuccess
-    const chip = container.querySelector('.MuiChip-colorSuccess');
-    expect(chip).not.toBeNull();
-    expect(chip?.textContent).toBe('noteOn');
+    const badge = container.querySelector('.bg-green-900.text-green-300');
+    expect(badge).not.toBeNull();
+    expect(badge?.textContent).toBe('noteOn');
   });
 
   it('limits display to 100 messages when given 105 messages', () => {
@@ -53,7 +52,6 @@ describe('MessageLog', () => {
 
   it('renders a scrollable container with fixed height and overflow-y auto', () => {
     const { container } = render(React.createElement(MessageLog, { messages: [] }));
-    // The TableContainer renders as a Paper div wrapping the table
     const tableContainer = container.firstChild as HTMLElement;
     expect(tableContainer).not.toBeNull();
     expect(tableContainer.style.height).toBe('350px');

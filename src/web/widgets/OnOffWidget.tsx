@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card, CardContent, Typography, Box } from '@mui/material';
 import type { WidgetConfig } from '../../types.js';
 
 interface OnOffWidgetProps {
@@ -10,32 +9,19 @@ interface OnOffWidgetProps {
 export function OnOffWidget({ config, value }: OnOffWidgetProps): React.ReactElement {
   const threshold = config.threshold ?? 64;
   const isOn = value !== undefined && value >= threshold;
-  const color = isOn ? '#4caf50' : '#616161';
 
   return (
-    <Card elevation={2}>
-      <CardContent>
-        <Box
-          data-testid="indicator"
-          data-state={isOn ? 'on' : 'off'}
-          sx={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            backgroundColor: color,
-            mb: 1,
-          }}
-        />
-        <Typography variant="subtitle1" color="text.secondary">
-          {config.label}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Ch {config.channel} · CC {config.cc}
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 0.5 }}>
-          {value !== undefined ? value : '\u2014'}
-        </Typography>
-      </CardContent>
-    </Card>
+    <div className="bg-gray-800 rounded-lg p-4">
+      <div
+        data-testid="indicator"
+        data-state={isOn ? 'on' : 'off'}
+        className={`w-10 h-10 rounded-full mb-2 ${isOn ? 'bg-green-500' : 'bg-gray-600'}`}
+      />
+      <div className="text-gray-400 text-sm mt-1">{config.label}</div>
+      <div className="text-gray-500 text-xs">Ch {config.channel} · CC {config.cc}</div>
+      <div className="text-white text-sm mt-1">
+        {value !== undefined ? value : '\u2014'}
+      </div>
+    </div>
   );
 }

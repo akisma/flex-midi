@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card, CardContent, Typography } from '@mui/material';
 import type { WidgetConfig } from '../../types.js';
 
 interface ValueWidgetProps {
@@ -9,18 +8,12 @@ interface ValueWidgetProps {
 
 export function ValueWidget({ config, value }: ValueWidgetProps): React.ReactElement {
   return (
-    <Card elevation={2}>
-      <CardContent>
-        <Typography variant="h3" component="div">
-          {value !== undefined ? value : '\u2014'}
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          {config.label}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Ch {config.channel} · CC {config.cc}
-        </Typography>
-      </CardContent>
-    </Card>
+    <div className="bg-gray-800 rounded-lg p-4">
+      <div className="text-3xl font-bold text-white font-mono">
+        {value !== undefined ? value : '\u2014'}
+      </div>
+      <div className="text-gray-400 text-sm mt-1">{config.label}</div>
+      <div className="text-gray-500 text-xs">Ch {config.channel} · CC {config.cc}</div>
+    </div>
   );
 }
