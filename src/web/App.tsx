@@ -188,6 +188,7 @@ export function App(): React.ReactElement {
           widgets={widgets}
           ccValues={ccValues}
           onRemove={(id) => setWidgets((prev) => prev.filter((w) => w.id !== id))}
+          onReorder={(reordered) => setWidgets(reordered)}
           activeNotes={activeNotes}
           noteVelocities={noteVelocities}
         />
