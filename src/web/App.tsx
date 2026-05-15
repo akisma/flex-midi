@@ -8,6 +8,7 @@ import { AddWidgetDialog } from './AddWidgetDialog.js';
 import { MidiSimulator } from '../simulator.js';
 import { parseMidiMessage } from '../parser.js';
 import type { MidiMessage, WidgetConfig } from '../types.js';
+import { loadWidgets, saveWidgets } from './persistence.js';
 
 const MAX_MESSAGES = 100;
 
@@ -19,13 +20,17 @@ export function App(): React.ReactElement {
   const [lastChannel, setLastChannel] = useState<number | null>(null);
   const [messagesPerSecond, setMessagesPerSecond] = useState(0);
   const [mode, setMode] = useState<'simulator' | 'play'>('simulator');
-  const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
+  const [widgets, setWidgets] = useState<WidgetConfig[]>(() => loadWidgets());
   const [ccValues, setCcValues] = useState<Map<string, number>>(new Map());
   const [noteVelocities, setNoteVelocities] = useState<Map<string, number>>(new Map());
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [lastMidiMessage, setLastMidiMessage] = useState<MidiMessage | null>(null);
   const simulatorRef = useRef<MidiSimulator | null>(null);
   const timestampsRef = useRef<Date[]>([]);
+
+  useEffect(() => {
+    saveWidgets(widgets);
+  }, [widgets]);
 
   const handleMidiInput = (data: Uint8Array) => {
     const message = parseMidiMessage(data);
