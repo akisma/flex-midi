@@ -13,7 +13,7 @@ const widgets: WidgetConfig[] = [
 describe('WidgetGrid', () => {
   it('renders correct number of widget cards', () => {
     const ccValues = new Map<string, number>();
-    render(React.createElement(WidgetGrid, { widgets, ccValues, onRemove: vi.fn() }));
+    render(React.createElement(WidgetGrid, { widgets, ccValues, onRemove: vi.fn(), activeNotes: new Set<number>(), noteVelocities: new Map<string, number>() }));
     expect(screen.getByText('Volume')).toBeTruthy();
     expect(screen.getByText('Sustain')).toBeTruthy();
     expect(screen.getByText('Expression')).toBeTruthy();
@@ -21,7 +21,7 @@ describe('WidgetGrid', () => {
 
   it('renders ValueWidget for type value', () => {
     const ccValues = new Map([['0:7', 100]]);
-    render(React.createElement(WidgetGrid, { widgets, ccValues, onRemove: vi.fn() }));
+    render(React.createElement(WidgetGrid, { widgets, ccValues, onRemove: vi.fn(), activeNotes: new Set<number>(), noteVelocities: new Map<string, number>() }));
     expect(screen.getByText('Volume')).toBeTruthy();
     expect(screen.getByText('100')).toBeTruthy();
   });
@@ -29,7 +29,7 @@ describe('WidgetGrid', () => {
   it('renders OnOffWidget for type onoff', () => {
     const ccValues = new Map([['0:64', 127]]);
     render(
-      React.createElement(WidgetGrid, { widgets, ccValues, onRemove: vi.fn() })
+      React.createElement(WidgetGrid, { widgets, ccValues, onRemove: vi.fn(), activeNotes: new Set<number>(), noteVelocities: new Map<string, number>() })
     );
     expect(screen.getByText('Sustain')).toBeTruthy();
     expect(screen.getByTestId('indicator')).toBeTruthy();
@@ -38,7 +38,7 @@ describe('WidgetGrid', () => {
   it('calls onRemove with correct id when delete button is clicked', () => {
     const onRemove = vi.fn();
     const ccValues = new Map<string, number>();
-    render(React.createElement(WidgetGrid, { widgets, ccValues, onRemove }));
+    render(React.createElement(WidgetGrid, { widgets, ccValues, onRemove, activeNotes: new Set<number>(), noteVelocities: new Map<string, number>() }));
     const deleteButtons = screen.getAllByRole('button', { name: /delete widget/i });
     expect(deleteButtons.length).toBe(3);
     fireEvent.click(deleteButtons[1]);

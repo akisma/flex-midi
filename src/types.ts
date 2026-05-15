@@ -10,7 +10,7 @@ export type MidiMessage =
 
 export interface WidgetConfig {
   id: string;
-  type: 'value' | 'onoff';
+  type: 'value' | 'onoff' | 'range' | 'toggle' | 'note';
   channel: number;
   cc: number;
   label: string;

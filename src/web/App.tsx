@@ -21,6 +21,7 @@ export function App(): React.ReactElement {
   const [mode, setMode] = useState<'simulator' | 'play'>('simulator');
   const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
   const [ccValues, setCcValues] = useState<Map<string, number>>(new Map());
+  const [noteVelocities, setNoteVelocities] = useState<Map<string, number>>(new Map());
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const simulatorRef = useRef<MidiSimulator | null>(null);
   const timestampsRef = useRef<Date[]>([]);
@@ -39,6 +40,11 @@ export function App(): React.ReactElement {
         return next;
       });
       setLastNote(message);
+      setNoteVelocities((prev) => {
+        const next = new Map(prev);
+        next.set(`${message.channel}:${message.note}`, message.velocity);
+        return next;
+      });
     } else if (message.type === 'noteOff') {
       setActiveNotes((prev) => {
         const next = new Set(prev);
@@ -175,6 +181,8 @@ export function App(): React.ReactElement {
           widgets={widgets}
           ccValues={ccValues}
           onRemove={(id) => setWidgets((prev) => prev.filter((w) => w.id !== id))}
+          activeNotes={activeNotes}
+          noteVelocities={noteVelocities}
         />
         <MessageLog messages={messages} />
         <AddWidgetDialog

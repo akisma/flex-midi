@@ -11,7 +11,7 @@ export function AddWidgetDialog({ open, onAdd, onClose }: AddWidgetDialogProps):
   const [label, setLabel] = useState('');
   const [channel, setChannel] = useState(0);
   const [cc, setCc] = useState(0);
-  const [type, setType] = useState<'value' | 'onoff'>('value');
+  const [type, setType] = useState<'value' | 'onoff' | 'range' | 'toggle' | 'note'>('value');
   const [threshold, setThreshold] = useState(64);
 
   if (!open) return null;
@@ -21,7 +21,7 @@ export function AddWidgetDialog({ open, onAdd, onClose }: AddWidgetDialogProps):
   const ccError = cc < 0 || cc > 127;
   const thresholdError = threshold < 0 || threshold > 127;
 
-  const isValid = !labelError && !channelError && !ccError && (type !== 'onoff' || !thresholdError);
+  const isValid = !labelError && !channelError && !ccError && (type !== 'onoff' && type !== 'toggle' || !thresholdError);
 
   const handleAdd = () => {
     if (!isValid) return;
@@ -31,7 +31,7 @@ export function AddWidgetDialog({ open, onAdd, onClose }: AddWidgetDialogProps):
       channel,
       cc,
       label: label.trim(),
-      ...(type === 'onoff' ? { threshold } : {}),
+      ...(type === 'onoff' || type === 'toggle' ? { threshold } : {}),
     };
     onAdd(config);
     handleClose();
@@ -41,7 +41,7 @@ export function AddWidgetDialog({ open, onAdd, onClose }: AddWidgetDialogProps):
     setLabel('');
     setChannel(0);
     setCc(0);
-    setType('value');
+    setType('value' as 'value' | 'onoff' | 'range' | 'toggle' | 'note');
     setThreshold(64);
     onClose();
   };
@@ -79,7 +79,7 @@ export function AddWidgetDialog({ open, onAdd, onClose }: AddWidgetDialogProps):
             )}
           </div>
           <div>
-            <label htmlFor="widget-cc" className="text-sm text-gray-400 mb-1 block">CC Number</label>
+            <label htmlFor="widget-cc" className="text-sm text-gray-400 mb-1 block">{type === 'note' ? 'Note Number' : 'CC Number'}</label>
             <input
               id="widget-cc"
               type="number"
@@ -99,13 +99,16 @@ export function AddWidgetDialog({ open, onAdd, onClose }: AddWidgetDialogProps):
               id="widget-type"
               className="w-full bg-gray-700 text-white rounded px-3 py-2 border border-gray-600"
               value={type}
-              onChange={(e) => setType(e.target.value as 'value' | 'onoff')}
+              onChange={(e) => setType(e.target.value as 'value' | 'onoff' | 'range' | 'toggle' | 'note')}
             >
               <option value="value">Value Display</option>
               <option value="onoff">On/Off Indicator</option>
+              <option value="range">Range</option>
+              <option value="toggle">Toggle</option>
+              <option value="note">Note Monitor</option>
             </select>
           </div>
-          {type === 'onoff' && (
+          {(type === 'onoff' || type === 'toggle') && (
             <div>
               <label htmlFor="widget-threshold" className="text-sm text-gray-400 mb-1 block">Threshold</label>
               <input

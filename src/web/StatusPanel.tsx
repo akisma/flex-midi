@@ -1,13 +1,8 @@
 import React from 'react';
 import type { MidiMessage } from '../types.js';
+import { midiNoteName } from './utils.js';
 
-const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
-export function midiNoteName(note: number): string {
-  const octave = Math.floor(note / 12) - 1;
-  const name = NOTE_NAMES[note % 12];
-  return `${name}${octave}`;
-}
+export { midiNoteName };
 
 interface StatusPanelProps {
   lastNote: (MidiMessage & { type: 'noteOn' }) | null;
