@@ -107,8 +107,7 @@ export function App(): React.ReactElement {
     }
   };
 
-  const handleModeChange = (_: React.MouseEvent<HTMLElement>, newMode: 'simulator' | 'play' | null) => {
-    if (newMode === null) return;
+  const handleModeChange = (newMode: 'simulator' | 'play') => {
     const simulator = simulatorRef.current;
     if (newMode === 'play') {
       if (simulator && running) {
@@ -134,7 +133,7 @@ export function App(): React.ReactElement {
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
-              onClick={() => handleModeChange(null as unknown as React.MouseEvent<HTMLElement>, 'simulator')}
+              onClick={() => handleModeChange('simulator')}
             >
               Simulator
             </button>
@@ -144,7 +143,7 @@ export function App(): React.ReactElement {
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
-              onClick={() => handleModeChange(null as unknown as React.MouseEvent<HTMLElement>, 'play')}
+              onClick={() => handleModeChange('play')}
             >
               Play
             </button>

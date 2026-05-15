@@ -14,9 +14,6 @@ const END_NOTE = 83;
 // Within an octave, which semitones are black keys
 const BLACK_KEY_SEMITONES = new Set([1, 3, 6, 8, 10]); // C#, D#, F#, G#, A#
 
-// White key semitones in order: C, D, E, F, G, A, B
-const WHITE_KEY_SEMITONES = [0, 2, 4, 5, 7, 9, 11];
-
 interface KeyInfo {
   note: number;
   isBlack: boolean;
@@ -51,10 +48,6 @@ const WHITE_KEY_WIDTH = 36; // px
 const WHITE_KEY_HEIGHT = 120; // px
 const BLACK_KEY_WIDTH = 22; // px
 const BLACK_KEY_HEIGHT = 72; // px
-
-// Offset of black key center relative to the left edge of the white key it follows
-// Black key is centered between two white keys, so offset = WHITE_KEY_WIDTH - BLACK_KEY_WIDTH/2
-const BLACK_KEY_OFFSET = WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2;
 
 export function Keyboard({ activeNotes, interactive = false, onNoteOn, onNoteOff }: KeyboardProps): React.ReactElement {
   const pressedKeys = useRef<Set<number>>(new Set());

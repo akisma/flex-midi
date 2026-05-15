@@ -23,6 +23,10 @@ export class MidiSimulator {
       clearInterval(this.interval);
       this.interval = null;
     }
+    for (const t of this.pendingTimeouts) {
+      clearTimeout(t);
+    }
+    this.pendingTimeouts = [];
   }
 
   private generateMessage(): Uint8Array {
@@ -44,6 +48,7 @@ export class MidiSimulator {
         const noteOnMsg = new Uint8Array([0x90 | channel, note, velocity]);
         const delay = 200 + Math.floor(Math.random() * 401);
         const t = setTimeout(() => {
+          this.pendingTimeouts = this.pendingTimeouts.filter((id) => id !== t);
           if (this.listener) {
             this.listener(new Uint8Array([0x80 | channel, note, velocity]));
           }
