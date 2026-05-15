@@ -23,6 +23,7 @@ export function App(): React.ReactElement {
   const [ccValues, setCcValues] = useState<Map<string, number>>(new Map());
   const [noteVelocities, setNoteVelocities] = useState<Map<string, number>>(new Map());
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [lastMidiMessage, setLastMidiMessage] = useState<MidiMessage | null>(null);
   const simulatorRef = useRef<MidiSimulator | null>(null);
   const timestampsRef = useRef<Date[]>([]);
 
@@ -62,6 +63,7 @@ export function App(): React.ReactElement {
     if ('channel' in message) {
       setLastChannel(message.channel);
     }
+    setLastMidiMessage(message);
     timestampsRef.current.push(new Date());
   };
 
@@ -192,6 +194,7 @@ export function App(): React.ReactElement {
             setAddDialogOpen(false);
           }}
           onClose={() => setAddDialogOpen(false)}
+          lastMidiMessage={lastMidiMessage}
         />
       </div>
     </div>

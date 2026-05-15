@@ -1,18 +1,38 @@
-import React, { useState } from 'react';
-import type { WidgetConfig } from '../types.js';
+import React, { useState, useEffect } from 'react';
+import type { WidgetConfig, MidiMessage } from '../types.js';
+import { midiNoteName } from './utils.js';
 
 interface AddWidgetDialogProps {
   open: boolean;
   onAdd: (config: WidgetConfig) => void;
   onClose: () => void;
+  lastMidiMessage?: MidiMessage | null;
 }
 
-export function AddWidgetDialog({ open, onAdd, onClose }: AddWidgetDialogProps): React.ReactElement | null {
+export function AddWidgetDialog({ open, onAdd, onClose, lastMidiMessage }: AddWidgetDialogProps): React.ReactElement | null {
   const [label, setLabel] = useState('');
   const [channel, setChannel] = useState(0);
   const [cc, setCc] = useState(0);
   const [type, setType] = useState<'value' | 'onoff' | 'range' | 'toggle' | 'note'>('value');
   const [threshold, setThreshold] = useState(64);
+  const [learning, setLearning] = useState(false);
+
+  useEffect(() => {
+    if (!learning || !lastMidiMessage) return;
+    if (lastMidiMessage.type === 'controlChange') {
+      setChannel(lastMidiMessage.channel);
+      setCc(lastMidiMessage.controller);
+      setLabel(`CC ${lastMidiMessage.controller}`);
+      setType('range');
+      setLearning(false);
+    } else if (lastMidiMessage.type === 'noteOn') {
+      setChannel(lastMidiMessage.channel);
+      setCc(lastMidiMessage.note);
+      setLabel(midiNoteName(lastMidiMessage.note));
+      setType('note');
+      setLearning(false);
+    }
+  }, [lastMidiMessage, learning]);
 
   if (!open) return null;
 
@@ -43,6 +63,7 @@ export function AddWidgetDialog({ open, onAdd, onClose }: AddWidgetDialogProps):
     setCc(0);
     setType('value' as 'value' | 'onoff' | 'range' | 'toggle' | 'note');
     setThreshold(64);
+    setLearning(false);
     onClose();
   };
 
@@ -50,6 +71,20 @@ export function AddWidgetDialog({ open, onAdd, onClose }: AddWidgetDialogProps):
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
         <h2 className="text-lg font-bold text-white mb-4">Add Widget</h2>
+        {learning ? (
+          <div className="flex flex-col items-center justify-center py-8 gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-purple-500 animate-pulse" />
+              <span className="text-white text-sm">Waiting for MIDI input...</span>
+            </div>
+            <button
+              className="px-4 py-2 rounded font-medium text-gray-300 hover:text-white border border-gray-600"
+              onClick={() => setLearning(false)}
+            >
+              Cancel Learn
+            </button>
+          </div>
+        ) : (
         <div className="flex flex-col gap-3">
           <div>
             <label htmlFor="widget-label" className="text-sm text-gray-400 mb-1 block">Label</label>
@@ -126,7 +161,16 @@ export function AddWidgetDialog({ open, onAdd, onClose }: AddWidgetDialogProps):
             </div>
           )}
         </div>
+        )}
         <div className="flex justify-end gap-2 mt-6">
+          {!learning && (
+            <button
+              className="px-4 py-2 rounded font-medium bg-purple-600 text-white hover:bg-purple-700"
+              onClick={() => setLearning(true)}
+            >
+              Learn
+            </button>
+          )}
           <button
             className="px-4 py-2 rounded font-medium text-gray-300 hover:text-white"
             onClick={handleClose}
