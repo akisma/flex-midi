@@ -7,3 +7,12 @@ export type MidiMessage =
   | { type: 'channelPressure'; channel: number; pressure: number }
   | { type: 'pitchBend'; channel: number; value: number }
   | { type: 'unknown'; data: number[] };
+
+export interface WidgetConfig {
+  id: string;
+  type: 'value' | 'onoff';
+  channel: number;
+  cc: number;
+  label: string;
+  threshold?: number;
+}

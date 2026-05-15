@@ -11,13 +11,16 @@ import {
   ToggleButtonGroup,
   ToggleButton,
 } from '@mui/material';
+const AddIcon = () => React.createElement('svg', { xmlns: 'http://www.w3.org/2000/svg', width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }, React.createElement('path', { d: 'M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z' }));
 import { MessageLog } from './MessageLog.js';
 import type { MessageEntry } from './MessageLog.js';
 import { Keyboard } from './Keyboard.js';
 import { StatusPanel } from './StatusPanel.js';
+import { WidgetGrid } from './WidgetGrid.js';
+import { AddWidgetDialog } from './AddWidgetDialog.js';
 import { MidiSimulator } from '../simulator.js';
 import { parseMidiMessage } from '../parser.js';
-import type { MidiMessage } from '../types.js';
+import type { MidiMessage, WidgetConfig } from '../types.js';
 
 const darkTheme = createTheme({
   palette: {
@@ -35,6 +38,9 @@ export function App(): React.ReactElement {
   const [lastChannel, setLastChannel] = useState<number | null>(null);
   const [messagesPerSecond, setMessagesPerSecond] = useState(0);
   const [mode, setMode] = useState<'simulator' | 'play'>('simulator');
+  const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
+  const [ccValues, setCcValues] = useState<Map<string, number>>(new Map());
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const simulatorRef = useRef<MidiSimulator | null>(null);
   const timestampsRef = useRef<Date[]>([]);
 
@@ -56,6 +62,13 @@ export function App(): React.ReactElement {
       setActiveNotes((prev) => {
         const next = new Set(prev);
         next.delete(message.note);
+        return next;
+      });
+    }
+    if (message.type === 'controlChange') {
+      setCcValues((prev) => {
+        const next = new Map(prev);
+        next.set(`${message.channel}:${message.controller}`, message.value);
         return next;
       });
     }
@@ -141,6 +154,13 @@ export function App(): React.ReactElement {
               {running ? 'Stop' : 'Start'}
             </Button>
           )}
+          <Button
+            variant="outlined"
+            startIcon={React.createElement(AddIcon)}
+            onClick={() => setAddDialogOpen(true)}
+          >
+            Add Widget
+          </Button>
         </Box>
         <Grid container spacing={2} sx={{ mb: 2 }}>
           <Grid item xs={12} md={8}>
@@ -160,7 +180,20 @@ export function App(): React.ReactElement {
             />
           </Grid>
         </Grid>
+        <WidgetGrid
+          widgets={widgets}
+          ccValues={ccValues}
+          onRemove={(id) => setWidgets((prev) => prev.filter((w) => w.id !== id))}
+        />
         <MessageLog messages={messages} />
+        <AddWidgetDialog
+          open={addDialogOpen}
+          onAdd={(config) => {
+            setWidgets((prev) => [...prev, config]);
+            setAddDialogOpen(false);
+          }}
+          onClose={() => setAddDialogOpen(false)}
+        />
       </Container>
     </ThemeProvider>
   );
