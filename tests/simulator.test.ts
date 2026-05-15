@@ -95,7 +95,6 @@ describe('MidiSimulator', () => {
       }
     }
 
-    simulator.stop();
     expect(noteOnMsg).not.toBeNull();
 
     const noteOnNote = noteOnMsg![1];
@@ -103,8 +102,11 @@ describe('MidiSimulator', () => {
 
     const countBefore = messages.length;
 
-    // Advance time past the maximum noteOff delay (600ms)
+    // Advance time past the maximum noteOff delay (600ms) BEFORE stopping
+    // stop() clears pending timeouts, so we need the noteOff to fire first
     vi.advanceTimersByTime(600);
+
+    simulator.stop();
 
     // Find a noteOff matching the noteOn
     const matchingNoteOff = messages
