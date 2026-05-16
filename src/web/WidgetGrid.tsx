@@ -13,7 +13,7 @@ interface WidgetGridProps {
   ccValues: Map<string, number>;
   onRemove: (id: string) => void;
   onReorder: (widgets: WidgetConfig[]) => void;
-  activeNotes: Map<number, number>;
+  activeNotes: Map<number, Set<number>>;
   noteVelocities: Map<string, number>;
 }
 

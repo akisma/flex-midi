@@ -15,7 +15,7 @@ const MAX_MESSAGES = 100;
 export function App(): React.ReactElement {
   const [messages, setMessages] = useState<MessageEntry[]>([]);
   const [running, setRunning] = useState(true);
-  const [activeNotes, setActiveNotes] = useState<Map<number, number>>(new Map());
+  const [activeNotes, setActiveNotes] = useState<Map<number, Set<number>>>(new Map());
   const [lastNote, setLastNote] = useState<(MidiMessage & { type: 'noteOn' }) | null>(null);
   const [lastChannel, setLastChannel] = useState<number | null>(null);
   const [messagesPerSecond, setMessagesPerSecond] = useState(0);
@@ -32,6 +32,10 @@ export function App(): React.ReactElement {
     saveWidgets(widgets);
   }, [widgets]);
 
+  // NOTE: The empty dependency array is correct only because all state reads inside
+  // this callback use the functional updater form (prev => ...). Any future direct
+  // state reads inside this callback must be added to the dependency array to avoid
+  // stale closures.
   const handleMidiInput = useCallback((data: Uint8Array) => {
     const message = parseMidiMessage(data);
     const entry: MessageEntry = { message, timestamp: new Date() };
@@ -42,7 +46,9 @@ export function App(): React.ReactElement {
     if (message.type === 'noteOn') {
       setActiveNotes((prev) => {
         const next = new Map(prev);
-        next.set(message.note, (next.get(message.note) ?? 0) + 1);
+        const channels = new Set(next.get(message.note));
+        channels.add(message.channel);
+        next.set(message.note, channels);
         return next;
       });
       setLastNote(message);
@@ -54,11 +60,12 @@ export function App(): React.ReactElement {
     } else if (message.type === 'noteOff') {
       setActiveNotes((prev) => {
         const next = new Map(prev);
-        const count = next.get(message.note) ?? 0;
-        if (count <= 1) {
+        const channels = new Set(next.get(message.note));
+        channels.delete(message.channel);
+        if (channels.size === 0) {
           next.delete(message.note);
         } else {
-          next.set(message.note, count - 1);
+          next.set(message.note, channels);
         }
         return next;
       });
@@ -178,7 +185,7 @@ export function App(): React.ReactElement {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
           <div className="md:col-span-8">
             <Keyboard
-              activeNotes={activeNotes}
+              activeNotes={new Set(activeNotes.keys())}
               interactive={mode === 'play'}
               onNoteOn={mode === 'play' ? handleMidiInput : undefined}
               onNoteOff={mode === 'play' ? handleMidiInput : undefined}
@@ -199,6 +206,8 @@ export function App(): React.ReactElement {
           onRemove={(id) => setWidgets((prev) => prev.filter((w) => w.id !== id))}
           onReorder={(reordered) => setWidgets(reordered)}
           activeNotes={activeNotes}
+          // NoteWidget uses activeNotes.has(widget.cc) — note-scoped lookup is intentional
+          // for keyboard display; per-channel awareness is tracked in the Map<number,Set<number>>
           noteVelocities={noteVelocities}
         />
         <MessageLog messages={messages} />

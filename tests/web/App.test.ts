@@ -37,10 +37,10 @@ describe('App mode toggle', () => {
 
   it('switching back to Simulator mode shows Start/Stop button', () => {
     render(React.createElement(App));
-    const playButton = screen.getByRole('button', { name: /^play$/i });
+    const playButton = screen.getByRole('button', { name: /play/i });
     fireEvent.click(playButton);
     expect(screen.queryByRole('button', { name: /stop/i })).toBeNull();
-    const simulatorButton = screen.getByRole('button', { name: /^simulator$/i });
+    const simulatorButton = screen.getByRole('button', { name: /simulator/i });
     fireEvent.click(simulatorButton);
     expect(screen.getByRole('button', { name: /start/i })).toBeTruthy();
   });

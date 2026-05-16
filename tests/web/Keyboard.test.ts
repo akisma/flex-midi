@@ -6,7 +6,7 @@ import { Keyboard } from '../../src/web/Keyboard.js';
 describe('Keyboard', () => {
   it('renders 21 white keys (3 octaves: C3-B5)', () => {
     const { container } = render(
-      React.createElement(Keyboard, { activeNotes: new Map<number, number>() })
+      React.createElement(Keyboard, { activeNotes: new Set<number>() })
     );
     const whiteKeys = container.querySelectorAll('[data-key-type="white"]');
     expect(whiteKeys.length).toBe(21);
@@ -14,7 +14,7 @@ describe('Keyboard', () => {
 
   it('renders 15 black keys (3 octaves of sharps/flats)', () => {
     const { container } = render(
-      React.createElement(Keyboard, { activeNotes: new Map<number, number>() })
+      React.createElement(Keyboard, { activeNotes: new Set<number>() })
     );
     const blackKeys = container.querySelectorAll('[data-key-type="black"]');
     expect(blackKeys.length).toBe(15);
@@ -22,7 +22,7 @@ describe('Keyboard', () => {
 
   it('highlights a white key when its note is in activeNotes', () => {
     // C3 = note 48, which is a white key
-    const activeNotes = new Map([[48, 1]]);
+    const activeNotes = new Set([48]);
     const { container } = render(
       React.createElement(Keyboard, { activeNotes })
     );
@@ -33,7 +33,7 @@ describe('Keyboard', () => {
 
   it('highlights a black key when its note is in activeNotes', () => {
     // C#3 = note 49, which is a black key
-    const activeNotes = new Map([[49, 1]]);
+    const activeNotes = new Set([49]);
     const { container } = render(
       React.createElement(Keyboard, { activeNotes })
     );
@@ -44,7 +44,7 @@ describe('Keyboard', () => {
 
   it('does not highlight keys not in activeNotes', () => {
     // Only note 48 is active; note 50 (D3, white) should not be highlighted
-    const activeNotes = new Map([[48, 1]]);
+    const activeNotes = new Set([48]);
     const { container } = render(
       React.createElement(Keyboard, { activeNotes })
     );
@@ -55,7 +55,7 @@ describe('Keyboard', () => {
 
   it('handles empty activeNotes set (no keys lit)', () => {
     const { container } = render(
-      React.createElement(Keyboard, { activeNotes: new Map<number, number>() })
+      React.createElement(Keyboard, { activeNotes: new Set<number>() })
     );
     const allKeys = container.querySelectorAll('[data-note]');
     allKeys.forEach((key) => {
@@ -67,7 +67,7 @@ describe('Keyboard', () => {
     const onNoteOn = vi.fn();
     const { container } = render(
       React.createElement(Keyboard, {
-        activeNotes: new Map<number, number>(),
+        activeNotes: new Set<number>(),
         interactive: true,
         onNoteOn,
       })
@@ -85,7 +85,7 @@ describe('Keyboard', () => {
     const onNoteOff = vi.fn();
     const { container } = render(
       React.createElement(Keyboard, {
-        activeNotes: new Map<number, number>(),
+        activeNotes: new Set<number>(),
         interactive: true,
         onNoteOff,
       })
@@ -103,7 +103,7 @@ describe('Keyboard', () => {
     const onNoteOn = vi.fn();
     const { container } = render(
       React.createElement(Keyboard, {
-        activeNotes: new Map<number, number>(),
+        activeNotes: new Set<number>(),
         interactive: false,
         onNoteOn,
       })
@@ -118,7 +118,7 @@ describe('Keyboard', () => {
     const onNoteOff = vi.fn();
     const { container } = render(
       React.createElement(Keyboard, {
-        activeNotes: new Map<number, number>(),
+        activeNotes: new Set<number>(),
         interactive: true,
         onNoteOn,
         onNoteOff,
