@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 
 interface KeyboardProps {
-  activeNotes: Set<number>;
+  activeNotes: Map<number, number>;
   interactive?: boolean;
   onNoteOn?: (data: Uint8Array) => void;
   onNoteOff?: (data: Uint8Array) => void;
