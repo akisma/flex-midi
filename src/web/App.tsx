@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MessageLog } from './MessageLog.js';
 import type { MessageEntry } from './MessageLog.js';
 import { Keyboard } from './Keyboard.js';
@@ -15,7 +15,7 @@ const MAX_MESSAGES = 100;
 export function App(): React.ReactElement {
   const [messages, setMessages] = useState<MessageEntry[]>([]);
   const [running, setRunning] = useState(true);
-  const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
+  const [activeNotes, setActiveNotes] = useState<Map<number, number>>(new Map());
   const [lastNote, setLastNote] = useState<(MidiMessage & { type: 'noteOn' }) | null>(null);
   const [lastChannel, setLastChannel] = useState<number | null>(null);
   const [messagesPerSecond, setMessagesPerSecond] = useState(0);
@@ -32,7 +32,7 @@ export function App(): React.ReactElement {
     saveWidgets(widgets);
   }, [widgets]);
 
-  const handleMidiInput = (data: Uint8Array) => {
+  const handleMidiInput = useCallback((data: Uint8Array) => {
     const message = parseMidiMessage(data);
     const entry: MessageEntry = { message, timestamp: new Date() };
     setMessages((prev) => {
@@ -41,8 +41,8 @@ export function App(): React.ReactElement {
     });
     if (message.type === 'noteOn') {
       setActiveNotes((prev) => {
-        const next = new Set(prev);
-        next.add(message.note);
+        const next = new Map(prev);
+        next.set(message.note, (next.get(message.note) ?? 0) + 1);
         return next;
       });
       setLastNote(message);
@@ -53,8 +53,18 @@ export function App(): React.ReactElement {
       });
     } else if (message.type === 'noteOff') {
       setActiveNotes((prev) => {
-        const next = new Set(prev);
-        next.delete(message.note);
+        const next = new Map(prev);
+        const count = next.get(message.note) ?? 0;
+        if (count <= 1) {
+          next.delete(message.note);
+        } else {
+          next.set(message.note, count - 1);
+        }
+        return next;
+      });
+      setNoteVelocities((prev) => {
+        const next = new Map(prev);
+        next.delete(`${message.channel}:${message.note}`);
         return next;
       });
     }
@@ -70,7 +80,7 @@ export function App(): React.ReactElement {
     }
     setLastMidiMessage(message);
     timestampsRef.current.push(new Date());
-  };
+  }, []);
 
   useEffect(() => {
     const simulator = new MidiSimulator();
@@ -114,9 +124,9 @@ export function App(): React.ReactElement {
         simulator.stop();
         setRunning(false);
       }
-      setActiveNotes(new Set());
+      setActiveNotes(new Map());
     } else {
-      setActiveNotes(new Set());
+      setActiveNotes(new Map());
     }
     setMode(newMode);
   };
