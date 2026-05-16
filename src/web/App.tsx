@@ -32,6 +32,12 @@ export function App(): React.ReactElement {
     saveWidgets(widgets);
   }, [widgets]);
 
+  /**
+   * Process incoming MIDI data (from simulator or keyboard clicks).
+   * Uses channel-aware reference counting for activeNotes:
+   * Map<noteNumber, channelCount> — a note stays active until ALL channels release it.
+   * Wrapped in useCallback since it only calls stable state setters.
+   */
   const handleMidiInput = useCallback((data: Uint8Array) => {
     const message = parseMidiMessage(data);
     const entry: MessageEntry = { message, timestamp: new Date() };
